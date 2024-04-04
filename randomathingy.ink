@@ -23,10 +23,9 @@ LIST students =
      (Sierra),
      (Ashley),
      (Jesse),
-     (Varun)
+     (Varun),
+     (Brad)
      
-LIST colors = 
-    aqua, black, blue, fuchsia, gray, green, lime, maroon, navy, olive, purple, red, silver, teal, white, yellow
      
 /*
 	Takes a random element from a list, and returns it, modifying the list.

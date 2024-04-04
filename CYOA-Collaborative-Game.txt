@@ -1,0 +1,15 @@
+Options:
+
+1. Create a landmark and / or interactable item
+2. Create a character and / or some dialogue
+3. Create a choice
+4. Start a discussion
+
+Roll the Calamity Die. If you get a 4 or 5, nothing happens. Otherwise...
+
+1. A character becomes frustrated with us
+2. Quantum weirdness causes a random aberation in the timeline
+3. The Powers That Be deny a previously granted Free Will Request; a random choice is eliminated and cannot be replaced
+
+6. You can propose a game rule, game option, or edit to the story. (Feel free to discuss this with others, if desired.) No game rules can be changed nor deleted-- only new ones created. 
+
