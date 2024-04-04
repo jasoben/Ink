@@ -1,8 +1,11 @@
-Conditionals, Functions, Tunnels, Threads
+<h3>Conditionals, Functions, Tunnels, Threads</h3>
+<h4>A story of sorts</h4>
 
 VAR hasKey = false 
 VAR timer = 1
 VAR hasPortalGun = false 
+VAR garageIsOpen = false
+VAR foyerDoorIsOpen = false
 
 ->start
 
@@ -12,42 +15,60 @@ VAR hasPortalGun = false
 == function get_current_location(location) ==
 ~ return TURNS_SINCE(location)
 
+== portal_choices ==
++ Pull the trigger on the portal gun -> DONE
++ Turn the knob on the portal gun -> DONE
+
 == start ==
-You close the door behind you. You know the IMPORTANT THING is here somewhere, but you only have ten minutes before ANTAGONIST comes home.
+You close the door behind you. You know the PORTAL GUN is here somewhere, but you only have ten minutes before ANTAGONIST comes home.
 
 -> Hallway
 
 == Hallway ==
+
 -> antagonist_is_home ->
 The hallway has three doors. One on the left, one on the right, and one directly ahead. 
 
-+ You open the [Left door] and go in...
+<- bedroom_choices
+{hasPortalGun: <- portal_choices}
+
+-> DONE
+
+= bedroom_choices
++ [Left door] You open the left door and go in...
 -> Bedroom
-+ Right door 
++ [Right door] You open the right door and go in...
 -> Office
-+ Center door 
++ [Center door] You open the center door and go in...
 -> Bathroom
 + Go back out front door 
 -> exit
 
 
 == Bedroom ==
-{Bedroom > 1: You already searched here. -> Hallway }
+~ advance_time(5)
+-> antagonist_is_home ->
+{Bedroom > 1: <em>You already searched here. You return to the hallway </em> -> Hallway }
 
 Here is ANTANGONIST'S bedroom. It smells like them, unfortunately.
 
-- (search_bedroom)
+<- bedroom_choices
+{hasPortalGun: <- portal_choices}
+
+= bedroom_choices
+-> antagonist_is_home ->
 * Search the bed 
     You search the bed and find nothing. 
     ~ advance_time(1)
-    -> search_bedroom
+    -> bedroom_choices
 * Search the dresser
     ~ advance_time(2)
-    You search the dresser and find nothing. -> search_bedroom
+    You search the dresser and find nothing. -> bedroom_choices
 * Search the side table
     ~ advance_time(1)
-    You search the side table and find a key! 
+    You search the side table and find a <b>key!</b>
     ~ hasKey = true
++ Go back to hallway -> Hallway
 
 - You finish searching the bedroom and return to the hallway.
 
@@ -96,13 +117,30 @@ Here is ANTANGONIST'S bathroom. They need to clean it.
 
 == antagonist_is_home ==
 {
-    - timer > 8:
-        Oh no! You hear the garage door opening! What will you do?
+    - timer > 10 && !garageIsOpen:
+        ~ garageIsOpen = true
+        <b>Oh no! You hear the garage door opening! What will you do?</b>
         + Get the heck out of here! -> exit
-        + Stick around and try to find what you're looking for ->->
-    - timer > 10:
-        Oh no! You hear the hallway door open!
+        + Stick around and try to find what you're looking for You steel your heart and keep looking.. 
+            ->->
+    - timer > 11 && !foyerDoorIsOpen:
+        ~ foyerDoorIsOpen = true
+        <b>Oh no! You hear the foyer door opening! What will you do?</b>
+        + Get the heck out of here! -> exit
+        + Stick around and try to find what you're looking for You steel your heart and keep looking.. 
+            ->->
+    - timer > 12:
+        <b>Oh no! You hear the hallway door open!</b>
         ~ temp is_in_hallway = get_current_location(-> Hallway)
+        {
+            - is_in_hallway == 0: ANTAGONIST sees you and pulls their pistol. BLAM! You die! -> DONE
+            - else: 
+                Try to hide? 
+                * Yes! 
+                ->->
+                * No!
+                ->->
+        }
     - else: 
         ->->
 }
