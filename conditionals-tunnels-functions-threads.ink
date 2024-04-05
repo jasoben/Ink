@@ -12,6 +12,7 @@ VAR current_location = "house"
 
 == function advance_time(time_amount) == // used to advance time as we search the house
 ~ timer += time_amount
+{time_amount * 2} minutes go by. You've been in the house about {timer * 2} minutes.
 
 == function is_in_location(location) == // check where we are
 { current_location == location: 
@@ -20,12 +21,16 @@ VAR current_location = "house"
     ~ return false
 }
 
+== return_to_hallway == // we will use this knot as a thread later on
+<em>You already searched here. You return to the hallway. </em> 
+    -> Hallway.no_time_pass
+
 == portal_choices == // these choices will be used as a thread because they will appear alongside very choice after we've found the portal gun
 * [Pull the trigger on the portal gun] -> portal_opens(false)
 * [Turn the knob on the portal gun, then pull the trigger] -> portal_opens(true)
 
 == start ==
-You close the door behind you. You know the PORTAL GUN is here somewhere, but you only have ten minutes before ANTAGONIST comes home.
+You close the door behind you. You know the PORTAL GUN is here somewhere, but you only have twenty minutes before ANTAGONIST comes home.
 
 -> Hallway
 
@@ -34,6 +39,7 @@ You close the door behind you. You know the PORTAL GUN is here somewhere, but yo
 ~ current_location = "hallway" // set the current location for conditional checks later
 -> antagonist_is_home -> // we jump down this "Tunnel" at regular intervals to check if the antagonist has come home, then return from whence we came 
 
+- (no_time_pass) // for when we return to this knot, but we don't want time to pass
 The hallway has three doors. One on the left, one on the right, and one directly ahead. 
 
 {has_portal_gun: <- portal_choices} // show this Thread of choices if we have the portal gun
@@ -49,7 +55,9 @@ The hallway has three doors. One on the left, one on the right, and one directly
 
 == Bedroom ==
 ~ current_location = "bedroom"
-{Bedroom > 1 && !foyer_door_is_open: <em>You already searched here. You return to the hallway </em> -> Hallway } // Check whether we've been here before and if the foyer door isn't open (if it is, then we may want to run back in here!)
+{
+    - Bedroom > 1 && !foyer_door_is_open: <- return_to_hallway // we use this thread for a standard action that occurs at each door if we've already been here.
+} // Check whether we've been here before and if the foyer door isn't open (if it is, then we may want to run back in here!)
 
 { 
 - foyer_door_is_open: You rush back into the bedroom.
@@ -82,7 +90,9 @@ The hallway has three doors. One on the left, one on the right, and one directly
 
 == Bathroom ==
 ~ current_location = "bathroom"
-{Bathroom > 1 && !foyer_door_is_open: <em>You already searched here. You return to the hallway </em> -> Hallway } // Check whether we've been here before and if the foyer door isn't open (if it is, then we may want to run back in here!)
+{
+    - Bathroom > 1 && !foyer_door_is_open: <- return_to_hallway
+} // Check whether we've been here before and if the foyer door isn't open (if it is, then we may want to run back in here!)
 { 
 - foyer_door_is_open: You rush back into the bathroom.
 - else: Here is ANTANGONIST'S bathroom. They need to clean it.
@@ -106,7 +116,7 @@ The hallway has three doors. One on the left, one on the right, and one directly
 
 == Office ==
 ~ current_location = "office"
-{office_choices && !foyer_door_is_open: <em>You already searched here. You return to the hallway </em> -> Hallway } // Check whether we've been here before and if the foyer door isn't open (if it is, then we may want to run back in here!); NOTE we need to visit "office_choices", which requires we have the key! Otherwise we can come back as much as we like.
+{office_choices && !foyer_door_is_open: <- return_to_hallway } // Check whether we've been here before and if the foyer door isn't open (if it is, then we may want to run back in here!); NOTE we need to visit "office_choices", which requires we have the key! Otherwise we can come back as much as we like.
 
 { 
     - has_key && !foyer_door_is_open:
@@ -115,7 +125,7 @@ The hallway has three doors. One on the left, one on the right, and one directly
          You rush back into the office.
     - else:
         The door is locked.
-         -> Hallway
+         -> Hallway.no_time_pass
 }
 
 
@@ -147,50 +157,55 @@ The hallway has three doors. One on the left, one on the right, and one directly
     - timer > 10 && !garage_open: // We only show this when the timer is greater than 10 AND the garage door hasn't already been open (otherwise the condition would trigger constantly when the timer is over 10)
         ~ garage_open = true
         <b>Oh no! You hear the garage door opening! What will you do?</b>
-        + Get the heck out of here! -> exit(false)
-        + [Stick around and try to find what you're looking for] You steel your heart and keep looking.. 
-            ->->
+        <- flee_choices
+        
     - timer > 11 && !foyer_door_is_open: // Ditto as above
         ~ foyer_door_is_open = true
         <b>Oh no! You hear the foyer door opening! What will you do?</b>
-        + Get the heck out of here! -> exit(true)
-        + [Stick around and try to find what you're looking for] You steel your heart and keep looking.. 
-            ->->
+        <- flee_choices
     - timer > 12:
         <b>Oh no! You hear the hallway door open!</b>
-        {
-            - is_in_location("hallway"): ANTAGONIST sees you! -> confrontation // If we're in the hallway, immediate confrontation
-                
-            - else: 
-                { has_portal_gun:
-                  Fortunately you have the <h1>PORTAL GUN!</h1>
-                <- portal_choices
-                }
-                {has_portal_gun: Use the portal gun or} try to hide? 
-                * Hide! 
-                -> hide
-                * Don't hide!
-                 * * Make a dash for it! 
-                    You meet ANTAGONIST in the hallway!
-                    -> confrontation
-                 * * Prepare to fight! 
-                    You enter the hallway confidently. 
-                    * * * "Have a knuckle sandwich!" 
-                    -> confrontation
-                    * * * Say nothing and rush them.
-                    -> confrontation
-                { 
-                    - is_in_location("office"): 
-                    * * Continue searching 
-                    -> Office
-                }
-                    
-                    
-        }
+        <- antagonist_in_hallway
     - else: 
         ->->
 }
 
+== flee_choices ==
+{has_portal_gun: <- portal_choices}
+    + Run for it! -> exit(false)
+    + {!has_portal_gun} [Stick around and try to find what you're looking for] You steel your heart and keep looking.. 
+    ->->
+
+== antagonist_in_hallway ==
+{
+    - is_in_location("hallway"): ANTAGONIST sees you! -> confrontation // If we're in the hallway, immediate confrontation
+        
+    - else: 
+        { has_portal_gun:
+          Fortunately you have the <h1>PORTAL GUN!</h1>
+        <- portal_choices
+        }
+        {has_portal_gun: Use the portal gun or} try to hide? 
+        * Hide! 
+        -> hide
+        * Don't hide!
+         * * Make a dash for it! 
+            You meet ANTAGONIST in the hallway!
+            -> confrontation
+         * * Prepare to fight! 
+            You enter the hallway confidently. 
+            * * * "Have a knuckle sandwich!" 
+            -> confrontation
+            * * * Say nothing and rush them.
+            -> confrontation
+        { 
+            - is_in_location("office"): 
+            * * Continue searching 
+            -> Office
+        }
+            
+            
+}
 == confrontation ==
 You square yourself for combat. 
 
