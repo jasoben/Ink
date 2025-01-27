@@ -136,9 +136,9 @@ You go through a dark tunnel, lit by dim blue-purple arcane torches that sparkle
 CONDITIONAL CHOICES 
 
 Sometimes we don't want to give a player a Choice until they have done something else, gone somewhere else, or picked up an item.
-If you already went through the Sticky Choices section, you'll have seem me using some (complex!) Conditional Choice logic in the door puzzle. 
-The "simple" Conditional Choice just looks at whether a player has visited a Knot or Stitch ("sinple" compared to the "complex" logic I used in the door puzzle -- you may or may not experience the idea as "simple", depending on your familiarity with programming topics)
-For instance, in the following we have two Sticky Choices, but you'll only see one in the Preview pane. 
+If you already went through the Sticky Choices section, you'll have seen me using some (complex!) Conditional Choice logic in the door puzzle. 
+The "simple" Conditional Choice just looks at whether a player has visited a Knot or Stitch. (When I say, simple, I mean compared to the "complex" logic I used in the door puzzle -- you may or may not experience the idea as "simple", depending on your familiarity with programming topics.)
+For instance, in the following we have two Sticky Choices in the Editor pane, but you'll only see one in the Preview pane. 
 -> two_choices
 
 = two_choices
@@ -155,7 +155,8 @@ Congrats! You visited the Stitch for Choice One. If you look back in the Editor,
     -> two_choices
 
 = choice_two 
-Now you were able to visit Choice Two. And that's all for Conditional Choices (for now)! We'll get into a bit of the more complex conditional logic in the "intro to logic" section. 
+Now you were able to visit Choice Two. You can use this to limit where players can go until they have visited other places, or found objects (for instance). 
+That's all for Conditional Choices (for now)! We'll get into a bit of the more complex conditional logic in the "intro to logic" section. 
 
 // Slight preview for this piece of complex logic and Global Variables-- every time you visit a Knot or Stitch, Ink keeps tracks of how many times. This logic says, "On the first time we visit, increase the Global Variable "visited_sections" by one. This will be explained in depth in the other sections. 
 { conditional_choices < 2:
@@ -179,7 +180,7 @@ If not, here is a demo of it breaking. When it breaks, look for my comments belo
     -> three_choices
 * Choice Three 
     -> three_choices
-// * -> my_awesome_fallback_choice_stitch
+ // * -> my_awesome_fallback_choice_stitch
 // Leave the above "commented out" for now! 
     
 // Ok, so when it runs out of Choices, Ink doesn't know where to go. You can solve this by making one of the Choices into a Sticky Choice, but you won't always want a Sticky Choice. 
@@ -191,7 +192,9 @@ If not, here is a demo of it breaking. When it breaks, look for my comments belo
 
 With the "fallback choice" now active, Ink knows that once it runs out of choices it should just jump to the my_awesome_fallback_choice_stitch Stitch.
 Notice that the Fallback Choice had no text, just a Divert to the Stitch. This tells Ink to choose it for us when we run out of Choices. 
-
+{ fallback_choices < 2:
+ ~ visited_sections++
+}
 * Cool, let's go back to the start. 
     -> start
 
@@ -220,14 +223,14 @@ VAR my_awesome_int = 100000
 
 * Cool, so you defined some values. What can we do with them?
 
-- Once you have values stored, you can either show them in text using curly brackets \{my_awesome_variable\} like this:
+- Once you have values stored, you can show them in text using curly brackets \{my_awesome_variable\} like this (LOOK AT EDITOR):
 My awesome string variable is... {my_awesome_string}.
 You can also change them by going into "code mode" with the tilda (~) in the Editor, like this: 
 \~ my_awesome_string = "even more awesome"
 ~ my_awesome_string = "even more awesome"
 
 * Nice, so how do we know it changed?
-- If we "call" it again, we see it now has the new value. 
+- If we "call" it again, we see it now has the new value. (LOOK AT EDITOR)
 My awesome string variable is now... {my_awesome_string}.
 
 * What about Integer and Boolean values?
@@ -235,15 +238,19 @@ My awesome string variable is now... {my_awesome_string}.
 They work the same way, but with some additional options. 
 With a Boolean, you can "flip" it from true to false and vice versa with the "not" command.
 \~ my_awesome_boolean = not my_awesome_boolean 
+
+(LOOK IN EDITOR)
+my_awesome_boolean was {my_awesome_boolean}...
+
 ~ my_awesome_boolean = not my_awesome_boolean
 
-It is {my_awesome_boolean} that we failed to change the value from true to false. 
+... but then I flipped it. Now it is {my_awesome_boolean}. 
 
-And if we "not" it again...
+And if we "not" it again... (LOOK IN EDITOR)
 ~ my_awesome_boolean = not my_awesome_boolean
 
-It is {my_awesome_boolean} that we changed the value from false to true.
-
+It is {my_awesome_boolean}.
+-
 * And integers?
 
 - Integers can be added, subtracted, multiplied, etc.. 
@@ -313,10 +320,138 @@ In this Knot, if we try to access my_awesome_temporary_variable, we will get an 
 -> start
 === intro_to_logic ===
 
-So, surprise, we've already used these in this script. 
+INTRO TO LOGIC 
+
+The last thing we will learn in Ink is the basics of logic. Though some of the syntax in this section will be unique to Ink, the concepts apply across any programming language. 
+Logic is the way we determine what is true in code. The basic operators are these:
+// A bonus thing! You can use tags inside paranthesis with Gathers the same way you might use a Knot or a Stitch. This makes it easier to control flow in some circumstances...
+- (operators)
++ Are two things equal? 
+We compare them using two equal signs: 
+THING_ONE == THING_TWO 
+will be true if these are both true, or both false, or both 2, or both "jelly donut" -> operators
+
++ Is one thing greater than the other, or less than, or greater than or equal to, or less than or equal to?
+THING_ONE > THING_TWO 
+will be true if THING_ONE is 5 and THING_TWO is 4 or smaller
+THING_ONE >= THING_TWO 
+will be true if THING_ONE is 5 and THING_TWO is 5 or smaller 
+< and <= are for less than, and less than or equal to, respectively
+-> operators
+
++ Are two or more things true?
+We use "and" or the more formal "&&" to ask if both or more things are true.
+THING_ONE > THING_TWO and THING_THREE < THING_TWO 
+will be true if THING_ONE is 5, THING_TWO is 3, and THING_THREE is 1, but not if THING_THREE is 4. 
+5 > 3 (true) and 1 < 3 (true) 
+true and true is true
+true and false is false 
+false and false is false 
+-> operators 
+
++ Are any of the following things true?
+We use "or" or the more formal "\|\|" (Shift+\\ on the keyboard) to ask if any of the following are true. 
+THING_ONE > THING_TWO or THING_THREE < THING_TWO 
+will be true if THING_ONE is 5, THING_TWO is 7, and THING_THREE is 1, but not if THING_THREE is 4. 
+5 > 7 (false) or 1 < 7 (true) 
+false or true is true 
+false or false is false
+->operators 
+
++ What if we need to compare multiple things?
+We can "nest" logic inside parantheses. 
+(THING_ONE < THING_TWO and THING_THREE > THING_TWO) or (THING_FOUR == THING_FIVE)
+There is no limit to how many "nests" we can do, as long as there is always a "close" parenthesis ) for every "open" parenthesis (
+An easy way to check is to count "opens" and then count "closes" and make sure they are the same number
++ + Such as?
+((this and ((this and that) or this)) and (this or (this and (this or that))))
+Seven of each means this will evaluate in Ink, BUT... just because something evaluates doesn't mean we wrote it correctly... this leads us to a fundamental truth of coding, which is the computer ALWAYS does exactly what we tell it, which means it will always do the wrong thing if we tell it to 
+:(
++ + + Seems confusing...
+It can be, but programs have evolved to help us out a bit. For instance: you'll see a subtle cue from Inky when you highlight an "open" or "close" parantheses. It will highlight the corresponding partner open or close in a gray box, giving you some suggestion of whether your operators will evaluate as you expect. 
+Mostly, though, this is unfortunately just something you have to learn through trial and error.
+-> operators
+
+
++ Ok, but how is this actually useful in coding a story?
+    -> terminus
++ Take me back to start
+    -> start
+
+=== terminus ===
+We've reached the final thing we will learn in Ink: IF/ELSE statements.  
+This is not ALL Ink has to offer-- there is much more, but this is sufficient for most projects. Past this point you would be learning ways to make your story more complex, your code more efficient. Lists, Tunnels, Threads, Functions, etc. are useful, but not necessary. 
+* Ok tell me about if/else
+
+- The IF/ELSE 
+Every programming language has an IF/ELSE statement, that translates to the following:
+IF this thing is true, do this 
+IF ELSEWISE this other thing is true, do this other thing 
+ELSEWISE if none of these things are true, do this final thing 
+
+Every language writes this logic a bit differently, but they use the same fundamental idea. 
+
+* How does Ink do it? 
+- In Ink, an IF/ELSE statement is written this way 
+\{
+\- IF LOGIC STATEMENT ONE: do thing one 
+\- ELSE IF LOGIC STATEMENT TWO: do thing two 
+\-else: do other thing 
+\}
+
+For instance
+\{ 
+\- coffee_cups_drank > 5: stop drinking coffee 
+\- coffee_cups_drank < 2: drink more coffee 
+\- else: walk around a bit and think about coffee
+\}
+
+We can put multiple lines of Ink script inside the statement. 
+For instance...
+// The bonus thing again! Reminder: you can use tags inside paranthesis with Gathers the same way you might use a Knot or a Stitch. This makes it easier to control flow in some circumstances...
+- (coffee_game) 
+// Define Global Variable for amount of coffee drank
+VAR coffee_drank = 0 
+// Every time we make this Sticky Choice, we add one cup to the variable
++ Drink a cup of coffee 
+~ coffee_drank++ // TIP: in coding, ++ means "add one" and -- means "minus one" 
+
+// IF/ELSE statement begins
+{
+// If we haven't drunk 5 cups yet, show the text in that statement 
+- coffee_drank < 5: 
+    You have drunk {coffee_drank} cups. You feel a light buzz, but probably need more coffee to get through your Ink HW assignment. 
+    -> coffee_game
+// If we have drunk between 5 and 9, show this text 
+- coffee_drank >= 5 and coffee_drank < 10:
+    You have drunk {coffee_drank} cups. You are starting to feel pretty revved up. BRING ON THE INK-SANITY
+    -> coffee_game
+// If we drink ten exactly 
+- coffee_drank == 10: 
+    You have drunk {coffee_drank} cups. You go outside and begin furiously flapping your wings. Miraculously, you take flight. Was 10 cups of coffee in five minutes all that separated humans from birds? 
+    Who needs college. You are humangbird. No structures can contain you. You fade into a spec as we see you sail over the Blue Ridge, into sunsets unknown...
+    // Notice we can have Choices inside an If statement 
+    + Don't stop drinking coffee
+        -> coffee_game
+    + Return to reality 
+        -> reality
+// More than 11 and less than 200...
+- coffee_drank >= 11 and coffee_drank < 200:
+    You have drunk {coffee_drank} cups. While flying. How?
+    + Don't stop drinking coffee
+        -> coffee_game
+    + Return to reality 
+        -> reality
+// Any number 200 or over, or any other condition where none of the other statements are true 
+- else:
+    If you reached this ending without modding the code, you are a truly clicking sicko. Congrats?
+    -> reality 
+}
+
+= reality
+That's it! You now know everything you need to know about Ink for this course. Please move on and do the HW assignment for this section. 
 
 -> start
-
 
 === function turn_number_to_text(num) ===
 
